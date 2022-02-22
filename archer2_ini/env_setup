@@ -1,0 +1,4 @@
+module load cce/12.0.3
+
+module load cray-hdf5-parallel
+module load cray-netcdf-hdf5parallel
