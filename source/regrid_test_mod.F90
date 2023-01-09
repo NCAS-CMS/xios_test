@@ -484,7 +484,7 @@ ierr =  c_grib_get_gaussian_latitudes(trunc, lats)
 WRITE(error_unit,*) 'ECCODES library needed to calculate Gaussian latitudes'
 ierr = 102
 #endif
-diff 
+ 
 IF (ierr /= 0) THEN
   WRITE(error_unit,*) 'Error calculating Gaussian latitudes, ierr = ',ierr
   CALL abort()
