@@ -7,6 +7,8 @@
 #SBATCH --partition=standard
 #SBATCH --qos=short
 #SBATCH --account=n02-cms
+#SBATCH --export=none
+#SBATCH --exclusive
 
 XIOS_DIR=/work/n02/n02/jwc/XIOS/extract/xios_trunk_r2245
 XIOS_EXEC=$XIOS_DIR/bin/xios_server.exe

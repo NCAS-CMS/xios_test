@@ -3,9 +3,7 @@
 #SBATCH --output=ens_test%j.out
 #SBATCH --error=ens_test%j.err
 #SBATCH --time=00:30:00
-#SBATCH --nodes=1
-#SBATCH --tasks-per-node=102
-#SBATCH --cpus-per-task=1
+#SBATCH --nodes=4
 #SBATCH --partition=standard
 #SBATCH --qos=standard
 #SBATCH --account=n02-cms
@@ -115,44 +113,20 @@ cat > iodef.xml << EOF
 </simulation>
 EOF
 
+SRUN_OPT="--nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --cpu-bind=cores --export=all"
+SRUN_COM="srun "
 if [[ $NUMENS -eq 0 ]]; then
-  EXECS=($MODEL_EXEC)
-  NPROCS=($NPROC)
-else
-  EXECS=()
-  NPROCS=()
+  SRUN_COM="$SRUN_COM $SRUN_OPT $MODEL_EXEC : "
 fi
 mem=0
 while [[ $mem -lt $NUMENS ]]; do
-  EXECS+=($MODEL_EXEC)
-  NPROCS+=($NPROC)
+  SRUN_COM="$SRUN_COM --het-group=$mem $SRUN_OPT env ENS_MEMBER=$mem $MODEL_EXEC : "
   rm -f ${INPUT_DATA_NML}_mem$mem
   cp $INPUT_DATA_NML ${INPUT_DATA_NML}_mem$mem
   ((mem=mem+1))
 done
-EXECS+=($XIOS_EXEC)
-NPROCS+=($XIOS_NPROC)
+SRUN_OPT="--nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --cpu-bind=cores --export=all"
+SRUN_COM="$SRUN_COM --het-group=$NUMENS $SRUN_OPT $XIOS_EXEC"
 
-cat > mpmd_wrapper.sh << EOF
-#!/bin/ksh
-map=(${EXECS[@]})
-counts=(${NPROCS[@]})
-nchunks=\${#counts[@]}
-
-index=0
-count=\${counts[0]}
-while test \$index -lt \$nchunks
-do
-  if test \$SLURM_PROCID -lt \$count
-  then
-    export ENS_MEMBER=\$index
-    exec \${map[\$index]}
-  fi
-  ((index=index+1))
-  ((count=count+\${counts[\$index]}))
-done
-EOF
-chmod u+x ./mpmd_wrapper.sh
-
-srun --mem-bind=local --cpu-bind=rank ./mpmd_wrapper.sh
-
+echo $SRUN_COM 
+$SRUN_COM 
