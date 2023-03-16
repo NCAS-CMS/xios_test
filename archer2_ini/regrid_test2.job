@@ -1,17 +1,14 @@
-#PBS -N regrid_test
-#PBS -j n
-#PBS -l select=2
-#PBS -l walltime=00:20:00
-#PBS -q short
-#PBS -A n02-cms
+#!/bin/bash
+#SBATCH --job-name=regrid_test
+#SBATCH --output=regrid_test%j.out
+#SBATCH --error=regrid_test%j.err
+#SBATCH --time=00:20:00
+#SBATCH --nodes=2
+#SBATCH --partition=standard
+#SBATCH --qos=short
+#SBATCH --account=n02-cms
 
-# Make sure any symbolic links are resolved to absolute path
-export PBS_O_WORKDIR=$(readlink -f $PBS_O_WORKDIR)
-
-# Change to the directory that the job was submitted from
-cd $PBS_O_WORKDIR
-
-XIOS_DIR=/work/n02/n02/jwc/XIOS/extract/xios_trunk_r1964
+XIOS_DIR=/work/n02/n02/jwc/XIOS/extract/xios_trunk_r2245
 XIOS_EXEC=$XIOS_DIR/bin/xios_server.exe
 MODEL_EXEC=./xios_test
 INPUT_DATA_NML='input_data'
@@ -20,8 +17,8 @@ NPROCY=6
 ((NPROC=NPROCX*NPROCY))
 NTIMES=1
 
-LAUNCH_MPI_MODEL="-ss -n $NPROC -N 24 -S 12 -d 1 -j 1"
-LAUNCH_MPI_XIOS="-ss -n 6 -N 6 -S 3 -d 1 -j 1"
+LAUNCH_MPI_MODEL="--het-group=0 --nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --cpu-bind=cores --export=all"
+LAUNCH_MPI_XIOS="--het-group=1 --nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --cpu-bind=cores --export=all"
 
 # Create input namelist file
 cat > xios_test.in << EOF
@@ -104,7 +101,7 @@ cat > iodef.xml << EOF
 </simulation>
 EOF
 
-APRUN_ARG="$LAUNCH_MPI_MODEL $MODEL_EXEC : $LAUNCH_MPI_XIOS $XIOS_EXEC"
+SRUN_ARG="$LAUNCH_MPI_MODEL $MODEL_EXEC : $LAUNCH_MPI_XIOS $XIOS_EXEC"
 
-echo "aprun $APRUN_ARG"
-aprun $APRUN_ARG
+echo "srun $SRUN_ARG"
+srun $SRUN_ARG
