@@ -4,7 +4,7 @@ Software to test [XIOS](https://forge.ipsl.jussieu.fr/ioserver/) output capabili
 
 ## Build code
 
-The Software comes with three example build environments which can be easily adapted to suit other environments.
+The Software comes with four example build environments which can be adapted to suit other environments. Currently the example build environments are for two supercomputer centres [archer2](https://www.archer2.ac.uk) and [jasmin](https://jasmin.ac.uk).
 
 There are four external libraries needed to build the code (plus all of their dependencies)
 
@@ -23,6 +23,8 @@ Once the env_setup and Makefile files have been modified to suit the local envir
 source ./env_setup
 make
 ```
+
+One of the build environments uses ESDM (Earth System Data Middleware) on jasmin, using ESDM will require extensive work to port to a new environment. Details about ESDM can be found [here](https://github.com/ESiWACE/esdm), additionally a special version of [NetCDF-FORTRAN](https://github.com/ESiWACE/esdm-netcdf-4.6.2-old) is needed to support ESDM NetCDF output from XIOS.
 
 ## Run code
 
