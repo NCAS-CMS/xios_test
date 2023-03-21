@@ -17,6 +17,13 @@ When reading an input netCDF file the code will use the metadata to determine wh
 
 The eccodes library is used when the code has been setup to regrid the output data onto a Gaussian grid, otherwise this library is not needed.
 
+Once the env_setup and Makefile files have been modified to suit the local environment, the xios test code can be compiled by running
+
+```
+source ./env_setup
+make
+```
+
 ## Run code
 
 In each example build environment there are two job files used to run the code as a batch job on a computer resource. One job is to test writing ensemble data output using XIOS and the other is to test using XIOS to regrid the data. Some modification of these files will be needed to run on different computer systems.
