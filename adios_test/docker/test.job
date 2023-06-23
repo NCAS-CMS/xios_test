@@ -1,0 +1,77 @@
+#!/bin/bash 
+
+cd /home/adios/data2/adios_test/docker
+
+MODEL_EXEC=./adios_test
+INPUT_DATA_NML='input_data'
+INPUT_DATA_NC='../data/u_plev_192x145x17.nc'
+ADIOS_CONFIG='adios_test.yaml'
+ADIOS_OUTFILE='adios_test_out.h5'
+NPROCX=2
+NPROCY=2
+((NPROC=NPROCX*NPROCY))
+NTIMES=6
+NUMENS=0
+
+LAUNCH_MPI_MODEL="-np $NPROC"
+
+# Create input namelist file
+cat > adios_test.in << EOF
+&input
+  do_regrid = .FALSE.,
+  do_ens = .FALSE.,
+  infile_data_base = '$INPUT_DATA_NML',
+  verbose = 1,
+  write_output = .FALSE.,
+  nprocx = $NPROCX,
+  nprocy = $NPROCY,
+  nt = $NTIMES,
+  ncopies = 2,
+  adios_config = '$ADIOS_CONFIG'
+  adios_outfile = '$ADIOS_OUTFILE'
+/
+
+&input_ens
+  num_ens = $NUMENS
+/
+EOF
+
+# Create input grid namelist file
+cat > $INPUT_DATA_NML << EOF
+&input_data
+  filename = '$INPUT_DATA_NC',
+  varname = 'u',
+  varname_adios = 'u',
+/
+EOF
+
+# ADIOS2 configuration file
+cat > $ADIOS_CONFIG << EOF
+---
+# adios2 config.yaml
+- IO: "adios_test"
+  Engine:
+      Type: "HDF5"
+...
+EOF
+
+if [[ $NUMENS -eq 0 ]] ; then
+  MPIEXEC_ARG="$LAUNCH_MPI_MODEL $MODEL_EXEC"
+else
+  MPIEXEC_ARG=""
+fi
+ens=0
+while [[ $ens -lt $NUMENS ]]; do
+  if [[ $ens -gt 0 ]] ; then
+    MPIEXEC_ARG="$MPIEXEC_ARG : "
+  fi
+  rm ${INPUT_DATA_NML}_mem$ens
+  cp $INPUT_DATA_NML ${INPUT_DATA_NML}_mem$ens
+  # Add extra environment variables to ENV_ENS
+  ENV_ENS="env ENS_MEMBER=$ens"
+  MPIEXEC_ARG="$MPIEXEC_ARG $LAUNCH_MPI_MODEL $ENV_ENS $MODEL_EXEC"
+  ((ens=ens+1))
+done
+
+echo "mpirun $MPIEXEC_ARG"
+mpirun $MPIEXEC_ARG
