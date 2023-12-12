@@ -19,8 +19,8 @@ NPROCY=6
 ((NPROC=NPROCX*NPROCY))
 NTIMES=1
 
-LAUNCH_MPI_MODEL="--het-group=0 --nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --cpu-bind=cores --export=all"
-LAUNCH_MPI_XIOS="--het-group=1 --nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --cpu-bind=cores --export=all"
+LAUNCH_MPI_MODEL="--het-group=0 --nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
+LAUNCH_MPI_XIOS="--het-group=1 --nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
 
 # Create input namelist file
 cat > xios_test.in << EOF

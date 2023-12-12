@@ -113,10 +113,10 @@ cat > iodef.xml << EOF
 </simulation>
 EOF
 
-SRUN_OPT="--nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --cpu-bind=cores --export=all"
+SRUN_OPT="--nodes=1 --ntasks=$NPROC --tasks-per-node=128 --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
 SRUN_COM="srun "
 if [[ $NUMENS -eq 0 ]]; then
-  SRUN_COM="$SRUN_COM $SRUN_OPT $MODEL_EXEC : "
+  SRUN_COM="$SRUN_COM --het-group=0 $SRUN_OPT $MODEL_EXEC : "
 fi
 mem=0
 while [[ $mem -lt $NUMENS ]]; do
@@ -125,8 +125,12 @@ while [[ $mem -lt $NUMENS ]]; do
   cp $INPUT_DATA_NML ${INPUT_DATA_NML}_mem$mem
   ((mem=mem+1))
 done
-SRUN_OPT="--nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --cpu-bind=cores --export=all"
-SRUN_COM="$SRUN_COM --het-group=$NUMENS $SRUN_OPT $XIOS_EXEC"
+SRUN_OPT="--nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
+if [[ $NUMENS -eq 0 ]]; then
+  SRUN_COM="$SRUN_COM --het-group=1 $SRUN_OPT $XIOS_EXEC"
+else
+  SRUN_COM="$SRUN_COM --het-group=$NUMENS $SRUN_OPT $XIOS_EXEC"
+fi
 
 echo $SRUN_COM 
 $SRUN_COM 
