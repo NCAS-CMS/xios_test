@@ -12,7 +12,7 @@
 #SBATCH --export=none
 #SBATCH --exclusive
 
-module load cce/12.0.3
+module load cce/15.0.0
 
 module list
 

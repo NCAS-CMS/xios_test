@@ -10,7 +10,7 @@
 #SBATCH --export=none
 #SBATCH --exclusive
 
-module load cce/12.0.3
+module load cce/15.0.0
 
 module list
 
@@ -125,7 +125,7 @@ while [[ $mem -lt $NUMENS ]]; do
   cp $INPUT_DATA_NML ${INPUT_DATA_NML}_mem$mem
   ((mem=mem+1))
 done
-SRUN_OPT="--nodes=1 --ntasks=6 --tasks-per-node=6 --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
+SRUN_OPT="--nodes=1 --ntasks=$XIOS_NPROC --tasks-per-node=$XIOS_NPROC --cpus-per-task=1 --hint=nomultithread --distribution=block:block --export=all"
 if [[ $NUMENS -eq 0 ]]; then
   SRUN_COM="$SRUN_COM --het-group=1 $SRUN_OPT $XIOS_EXEC"
 else
